@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Entity
 @Table(name = "employee")
@@ -77,8 +78,8 @@ public class Employee {
     }
 
     public static Employee createEmployee(String name, Boolean sex, String address, LocalDate birthDate,
-                              Boolean employmentType, String phoneNumber, Integer paymentDate, Integer salary,
-                              String accountNumber, String bankCode, String email, President president) {
+                                          Boolean employmentType, String phoneNumber, Integer paymentDate, Integer salary,
+                                          String accountNumber, String bankCode, String email, President president) {
         return new Employee(name, sex, address, birthDate, employmentType, phoneNumber, paymentDate, salary, accountNumber, bankCode, email, president);
     }
 }
