@@ -7,8 +7,6 @@ import com.example.User.respository.EmployeeRepository;
 import com.example.User.respository.PresidentRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class EmployeeServiceImpl implements EmployeeService{
 
@@ -38,5 +36,10 @@ public class EmployeeServiceImpl implements EmployeeService{
                 president
         );
         employeeRepository.save(employee);
+    }
+
+    @Override
+    public void modifyEmployee(EmployeeRequest employeeRequest) {
+
     }
 }

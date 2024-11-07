@@ -18,4 +18,10 @@ public class EmployeeController {
         employeeService.registerEmployee(employeeRequest);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/modify/{employeeId}")
+    public ResponseEntity<Void> modifyEmployee(@PathVariable Integer employeeId, @RequestBody EmployeeRequest employeeRequest) {
+        employeeService.modifyEmployee(employeeRequest);
+        return ResponseEntity.ok().build();
+    }
 }
