@@ -6,3 +6,10 @@ spring:
   cloud:
     config:
       fail-fast: true
+  batch:
+    jdbc:
+      initialize-schema: always # 배치 관련 테이블 자동 생성
+    datasource:
+      url: jdbc:mysql://localhost:3306/batch
+      user: root
+      password: 1234
