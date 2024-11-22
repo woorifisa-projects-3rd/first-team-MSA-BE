@@ -18,7 +18,7 @@ public class StoreEmployeeUpdateRequest {
     private LocalDate birthDate;
     private Boolean sex;
     private String phoneNumber;
-    private Boolean employmentType;
+    private Byte employmentType;
     private String bankCode;
     private String accountNumber;
     private Integer salary;
@@ -28,7 +28,7 @@ public class StoreEmployeeUpdateRequest {
     private String address;
 
     public static StoreEmployeeUpdateRequest of(
-            String email, String name, LocalDate birthDate, Boolean sex, String phoneNumber, Boolean employmentType,
+            String email, String name, LocalDate birthDate, Boolean sex, String phoneNumber, Byte employmentType,
             String bankCode, String accountNumber, Integer salary, Integer paymentDate, String address
     ) {
         return new StoreEmployeeUpdateRequest(

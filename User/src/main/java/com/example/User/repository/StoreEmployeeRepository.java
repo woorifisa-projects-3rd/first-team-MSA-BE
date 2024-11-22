@@ -20,7 +20,7 @@ public interface StoreEmployeeRepository extends JpaRepository<StoreEmployee, In
             "WHERE se.id = :id")
     void updateStoreEmployee(@Param("id") Integer id, @Param("name") String name, @Param("sex") Boolean sex,
             @Param("address") String address, @Param("birthDate") LocalDate birthDate, @Param("phoneNumber") String phoneNumber,
-            @Param("email") String email, @Param("salary") Integer salary, @Param("employmentType") Boolean employmentType, @Param("bankCode") String bankCode,
+            @Param("email") String email, @Param("salary") Integer salary, @Param("employmentType") Byte employmentType, @Param("bankCode") String bankCode,
             @Param("accountNumber") String accountNumber, @Param("paymentDate") Integer paymentDate);
 
     @Query("SELECT se FROM StoreEmployee se JOIN FETCH se.store WHERE se.store.id = :storeId")
