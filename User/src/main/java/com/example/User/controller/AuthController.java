@@ -3,6 +3,7 @@ package com.example.User.controller;
 import com.example.User.dto.login.ReqLoginData;
 import com.example.User.dto.login.ReqRegist;
 import com.example.User.dto.login.ResNewAccessToken;
+import com.example.User.dto.login.TokensResponse;
 import com.example.User.resolver.MasterId;
 import com.example.User.service.AuthService;
 import com.example.User.service.PresidentService;
@@ -26,32 +27,32 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    ResponseEntity<ResNewAccessToken> login(@RequestBody ReqLoginData reqLoginData, HttpServletRequest request) {
+    ResponseEntity<TokensResponse> login(@RequestBody ReqLoginData reqLoginData, HttpServletRequest request) {
         log.info("reqLoginData: "+reqLoginData);
 
         Integer id= presidentService.validateLogin(reqLoginData);
-        String[] tokens = authService.onAuthenticationSuccess(id);
+        TokensResponse tokensResponse = authService.onAuthenticationSuccess(id);
 
 
-//        ResponseCookie cookie1 = ResponseCookie.from("access_token", tokens[0])
-//                .path("/")
-//                .httpOnly(true)
-//                .maxAge(600)
-//                .sameSite("Lax")
-//                .build();
-//
-//        ResponseCookie cookie2 = ResponseCookie.from("refresh_token", tokens[1])
-//                .path("/")
-//                .httpOnly(true)
-//                .maxAge(36000)
-//                .sameSite("Lax")
-//                .build();
-//
-//        return ResponseEntity
-//                .ok()
-//                .header(HttpHeaders.SET_COOKIE, cookie1.toString(),cookie2.toString())
-//                .body(ResNewAccessToken.from(tokens[0]));
-        return ResponseEntity.ok(ResNewAccessToken.from(tokens[0]));
+        ResponseCookie cookie1 = ResponseCookie.from("access_token", tokensResponse.getAccessToken())
+                .path("/")
+                .httpOnly(true)
+                .maxAge(600)
+                .sameSite("Lax")
+                .build();
+
+        ResponseCookie cookie2 = ResponseCookie.from("refresh_token", tokensResponse.getRefreshToken())
+                .path("/")
+                .httpOnly(true)
+                .maxAge(36000)
+                .sameSite("Lax")
+                .build();
+
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.SET_COOKIE, cookie1.toString(),cookie2.toString())
+                .body(tokensResponse);
+//        return ResponseEntity.ok(tokensResponse);
     }
 
     @GetMapping("/logout")

@@ -35,7 +35,7 @@ public class JWTUtil {
        key = Keys.hmacShaKeyFor(settingKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(Integer id, int days) {
+    public String generateToken(Integer id, int min) {
 
         Map<String, Object> headers = new HashMap<>();
         headers.put("typ", "JWT");
@@ -43,7 +43,7 @@ public class JWTUtil {
 
         Map<String, Object> encrypted = cryptoUtil.encrypt(id);
 
-        int time = 60 * 24 * days; //테스트는 분단위로 나중에 60*24 (일)단위변경
+        int time = 60 * min; //테스트는 분단위로 나중에 60*24 (일)단위변경
 
         ZonedDateTime nowUtc = ZonedDateTime.now(ZoneId.of("UTC"));
 

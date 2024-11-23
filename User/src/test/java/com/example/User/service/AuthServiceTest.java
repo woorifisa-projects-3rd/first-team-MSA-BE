@@ -1,6 +1,7 @@
 package com.example.User.service;
 
 
+import com.example.User.dto.login.TokensResponse;
 import com.example.User.util.JWTUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,9 +45,9 @@ public class AuthServiceTest {
         when(jwtUtil.generateToken(userId, 1000)).thenReturn(mockRefreshToken);
 
         // When
-        String[] result = authService.onAuthenticationSuccess(userId);
-        log.info(result[0]);
-        assertThat(result[0]).isEqualTo(mockAccessToken);
+        TokensResponse tokensResponse  = authService.onAuthenticationSuccess(userId);
+
+        assertThat(tokensResponse.getAccessToken()).isEqualTo(mockAccessToken);
         // Then
         verify(jwtUtil).generateToken(userId, 100);
         verify(jwtUtil).generateToken(userId, 1000);
