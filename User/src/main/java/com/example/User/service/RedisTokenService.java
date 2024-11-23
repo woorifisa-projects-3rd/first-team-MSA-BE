@@ -1,5 +1,6 @@
 package com.example.User.service;
 
+import com.example.User.dto.login.TokensResponse;
 import com.example.User.error.CustomException;
 import com.example.User.error.ErrorCode;
 import com.example.User.util.CryptoUtil;
@@ -43,7 +44,7 @@ public class RedisTokenService {
     }
 
     @Transactional
-    public String checkRefreshToken(Integer accessTokenId) {
+    public TokensResponse checkRefreshToken(Integer accessTokenId) {
 
         String refreshToken =valueOps.get(accessTokenId.toString());
         if (refreshToken == null)
@@ -59,12 +60,13 @@ public class RedisTokenService {
         if(!Objects.equals(id, accessTokenId))
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 
-        checkAndRenewRefreshToken(id,exp);
-        return jwtUtil.generateToken(id, 1);
+        String newRefreshToken= checkAndRenewRefreshToken(id,exp);
+        String newAccessToken =jwtUtil.generateToken(id, 3);
+        return TokensResponse.of(newAccessToken,newRefreshToken);
     }
 
     @Transactional
-    public void checkAndRenewRefreshToken(Integer id,Integer exp){
+    public String checkAndRenewRefreshToken(Integer id,Integer exp){
         Date expTime = new Date(Instant.ofEpochMilli(exp).toEpochMilli() * 1000);
         Date current = new Date(System.currentTimeMillis());
         long gapTime = (expTime.getTime() - current.getTime());
@@ -73,8 +75,10 @@ public class RedisTokenService {
         if (gapTime < (1000 * 60 * 60)) {
             //if(gapTime < (1000 * 60 * 60 * 24 * 3  ) ){
             log.info("new Refresh Token required...  ");
-            String userRefreshToken = jwtUtil.generateToken(id, 30);
+            String userRefreshToken = jwtUtil.generateToken(id, 100000);
             setValues(id, userRefreshToken, Duration.ofDays(100));
+            return userRefreshToken;
         }
+        return null;
     }
 }

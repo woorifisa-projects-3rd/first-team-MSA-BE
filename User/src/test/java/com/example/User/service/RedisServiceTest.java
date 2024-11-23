@@ -1,6 +1,7 @@
 package com.example.User.service;
 
 
+import com.example.User.dto.login.TokensResponse;
 import com.example.User.error.CustomException;
 import com.example.User.error.ErrorCode;
 import com.example.User.util.CryptoUtil;
@@ -68,12 +69,12 @@ class RedisServiceTest {
         when(jwtUtil.generateToken(accessTokenId, 1)).thenReturn("new-access-token");
 
         // When
-        String result = redisTokenService.checkRefreshToken(accessTokenId);
+        TokensResponse tokensResponse = redisTokenService.checkRefreshToken(accessTokenId);
 
 
 
         // Then
-        assertThat(result).isEqualTo("new-access-token");
+        assertThat(tokensResponse.getAccessToken()).isEqualTo("new-access-token");
 
         verify(valueOps).get(accessTokenId.toString());
 

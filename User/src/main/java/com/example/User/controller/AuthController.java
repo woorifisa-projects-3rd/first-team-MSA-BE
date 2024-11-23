@@ -37,14 +37,14 @@ public class AuthController {
         ResponseCookie cookie1 = ResponseCookie.from("access_token", tokensResponse.getAccessToken())
                 .path("/")
                 .httpOnly(true)
-                .maxAge(600)
+                .maxAge(180)
                 .sameSite("Lax")
                 .build();
 
         ResponseCookie cookie2 = ResponseCookie.from("refresh_token", tokensResponse.getRefreshToken())
                 .path("/")
                 .httpOnly(true)
-                .maxAge(36000)
+                .maxAge(3600000)
                 .sameSite("Lax")
                 .build();
 
@@ -63,9 +63,35 @@ public class AuthController {
 
     @GetMapping("/refresh")
     ResponseEntity<ResNewAccessToken> refresh(@MasterId Integer id) {
-        String accessToken =redisTokenService.checkRefreshToken(id);
+        TokensResponse tokensResponse =redisTokenService.checkRefreshToken(id);
 
-        return ResponseEntity.ok(ResNewAccessToken.from(accessToken));
+        ResponseCookie cookie1 = ResponseCookie.from("access_token", tokensResponse.getAccessToken())
+                .path("/")
+                .httpOnly(true)
+                .maxAge(180)
+                .sameSite("Lax")
+                .build();
+
+        if (tokensResponse.getRefreshToken() == null) {
+            return ResponseEntity
+                    .ok()
+                    .header(HttpHeaders.SET_COOKIE, cookie1.toString())
+                    .body(ResNewAccessToken.from(tokensResponse.getAccessToken()));
+        }
+
+
+        ResponseCookie cookie2 = ResponseCookie.from("refresh_token", tokensResponse.getRefreshToken())
+                .path("/")
+                .httpOnly(true)
+                .maxAge(3600000)
+                .sameSite("Lax")
+                .build();
+
+        return ResponseEntity
+                .ok()
+                .header(HttpHeaders.SET_COOKIE, cookie1.toString(),cookie2.toString())
+                .body(ResNewAccessToken.from(tokensResponse.getAccessToken()));
+//        return ResponseEntity.ok(ResNewAccessToken.from(accessToken));
     }
 
     @PostMapping("/regist")
