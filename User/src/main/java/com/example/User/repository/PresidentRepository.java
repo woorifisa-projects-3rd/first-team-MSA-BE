@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface PresidentRepository extends JpaRepository<President, Integer> {
     Optional<President> findByEmail(String email);
 
-    boolean existsByEmailAndPhoneNumber(String email, String phoneNumber);
+    boolean existsByEmailOrPhoneNumber(String email, String phoneNumber);
 
     void deleteByEmail(String email);
 

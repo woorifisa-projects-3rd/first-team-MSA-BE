@@ -35,7 +35,7 @@ public class PresidentService {
     @Transactional
     public Integer regist(ReqRegist reqRegist) {
 
-        boolean result= presidentRepository.existsByEmailAndPhoneNumber(
+        boolean result= presidentRepository.existsByEmailOrPhoneNumber(
                 reqRegist.getEmail(), reqRegist.getPhoneNumber());
         if(result)
             throw new CustomException(ErrorCode.EMAIL_ALREADY_EXISTS);
