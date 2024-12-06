@@ -68,7 +68,7 @@ public class PresidentAccountController {
     }
 
     @PostMapping("/id-find") //사장님 아이디 찾기
-    ResponseEntity<ResIdFindData> findId(@Valid @RequestBody ReqIdFindData reqIdFindData){
+    public ResponseEntity<ResIdFindData> findId(@Valid @RequestBody ReqIdFindData reqIdFindData){
         String email = presidentService.findByNameAndPhoneNumber(reqIdFindData);
         return ResponseEntity.ok(ResIdFindData.from(email));
     }

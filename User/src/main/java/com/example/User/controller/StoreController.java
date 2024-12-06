@@ -21,20 +21,20 @@ public class StoreController {
     private final StoreService storeService;
 
     @PostMapping
-    private ResponseEntity<Void> store(@MasterId Integer id, @RequestBody StoreRequest storeRequest) {
+    public ResponseEntity<Void> store(@MasterId Integer id, @RequestBody StoreRequest storeRequest) {
         storeService.registerStore(id,storeRequest);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/storelist")
-    private ResponseEntity<List<StoreResponse>> showStores(@MasterId Integer presidentId) {
+    public ResponseEntity<List<StoreResponse>> showStores(@MasterId Integer presidentId) {
         List<StoreResponse> storeResponse = storeService.showStores(presidentId);
         return ResponseEntity.ok(storeResponse);
     }
 
 
     @PutMapping
-    private ResponseEntity<Void> updateStoreAccount(@RequestParam("storeid") Integer storeId,
+    public ResponseEntity<Void> updateStoreAccount(@RequestParam("storeid") Integer storeId,
                                                     @RequestBody StoreUpdateRequest request) {
 
         storeService.updateStore(storeId, request);
@@ -42,14 +42,14 @@ public class StoreController {
     }
 
     @GetMapping("/duplicate/name")
-    private ResponseEntity<Boolean> duplicateCheckStoreName(@RequestParam("storeid") Integer storeId,
+    public ResponseEntity<Boolean> duplicateCheckStoreName(@RequestParam("storeid") Integer storeId,
                                                             @RequestParam("storename") String storeName) {
         boolean result = storeService.duplicate(storeId, storeName);
         return ResponseEntity.ok(result);
     }
 
     @DeleteMapping
-    private ResponseEntity<Void> deleteStore(@RequestParam("storeid") Integer storeId) {
+    public ResponseEntity<Void> deleteStore(@RequestParam("storeid") Integer storeId) {
         storeService.deleteStore(storeId);
         //id 확인 후 삭제
         return ResponseEntity.ok().build();

@@ -20,7 +20,7 @@ public class PresidentInfoController {
 
     //사장 정보수정 폰번호,생년월일
     @PutMapping("/modify")
-    ResponseEntity<Void> updatePresident(@MasterId Integer id,@RequestBody PresidentUpdateRequest
+    public ResponseEntity<Void> updatePresident(@MasterId Integer id,@RequestBody PresidentUpdateRequest
                                                  presidentUpdateRequest) {
         presidentService.updatePresident(id, presidentUpdateRequest);
         return ResponseEntity.ok().build();

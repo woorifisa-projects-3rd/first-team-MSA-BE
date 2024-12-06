@@ -18,7 +18,7 @@ public interface StoreEmployeeRepository extends JpaRepository<StoreEmployee, In
             "se.email = :email, " + "se.salary = :salary, " + "se.employmentType = :employmentType, " +
             "se.bankCode = :bankCode, " + "se.accountNumber = :accountNumber, " + "se.paymentDate = :paymentDate " +
             "WHERE se.id = :id")
-    void updateStoreEmployee(@Param("id") Integer id, @Param("name") String name, @Param("sex") Boolean sex,
+    int updateStoreEmployee(@Param("id") Integer id, @Param("name") String name, @Param("sex") Boolean sex,
             @Param("address") String address, @Param("birthDate") LocalDate birthDate, @Param("phoneNumber") String phoneNumber,
             @Param("email") String email, @Param("salary") Integer salary, @Param("employmentType") Byte employmentType, @Param("bankCode") String bankCode,
             @Param("accountNumber") String accountNumber, @Param("paymentDate") Integer paymentDate);

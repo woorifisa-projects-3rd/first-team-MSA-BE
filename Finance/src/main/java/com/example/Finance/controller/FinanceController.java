@@ -8,6 +8,7 @@ import com.example.Finance.feign.UserFeign;
 import com.example.Finance.service.SimpleLedgerPdfService;
 import com.example.Finance.service.IncomeStatementPdfService;
 import com.example.Finance.service.TransactionHistoryService;
+import com.example.Finance.service.UserInteractService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +30,7 @@ public class FinanceController {
     private final TransactionHistoryService transactionHistoryService;
     private final SimpleLedgerPdfService simpleLedgerPdfService;
     private final IncomeStatementPdfService incomeStatementPdfService;
-    private final UserFeign userFeign;
+    private final UserInteractService userInteractService;
 
     //차트 제공에 맞춰서 변경하기
     @GetMapping("/transactionchart")
@@ -38,9 +39,8 @@ public class FinanceController {
             @RequestParam Integer year,
             @RequestParam Integer month)
     {
-        log.info("chart요청닿았음");
-        TransactionHistoryRequest transactionHistoryRequest= TransactionHistoryRequest.from(userFeign.getStoreAccountInfo(storeid));
-
+        TransactionHistoryRequest transactionHistoryRequest=
+                TransactionHistoryRequest.from(userInteractService.getStoreAccountInfo(storeid));
         return ResponseEntity.ok(
                 transactionHistoryService.getTransactionChartData(transactionHistoryRequest, year ,month));
     }
@@ -52,7 +52,8 @@ public class FinanceController {
             @RequestParam Integer year,
             @RequestParam Integer month
     ) {
-        TransactionHistoryRequest transactionHistoryRequest = TransactionHistoryRequest.from(userFeign.getStoreAccountInfo(storeid));
+        TransactionHistoryRequest transactionHistoryRequest =
+                TransactionHistoryRequest.from(userInteractService.getStoreAccountInfo(storeid));
         List<TransactionHistoryResponse> transactionHistoryResponseList = transactionHistoryService.getYearMonthlyTransactions(transactionHistoryRequest, year, month);
 
         // PDF 생성
@@ -73,7 +74,8 @@ public class FinanceController {
             @RequestParam Integer month,
             @RequestParam boolean taxtype
     ) {
-        TransactionHistoryRequest transactionHistoryRequest = TransactionHistoryRequest.from(userFeign.getStoreAccountInfo(storeid));
+        TransactionHistoryRequest transactionHistoryRequest =
+                TransactionHistoryRequest.from(userInteractService.getStoreAccountInfo(storeid));
 
         //이매소드 말고, 송,수취인 정보 받는 메소드로 변경
         List<TransactionHistoryWithCounterPartyResponse> transactionHistoryResponseList = transactionHistoryService.getYearMonthlyTransactionsWithCounterPartyName(transactionHistoryRequest, year, month);

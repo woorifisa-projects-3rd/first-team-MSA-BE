@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class IncomeStatementPdfService extends PdfService {
 
         // 게산한 손익관련 자료로 HTML 생성
         String html = generateHtml(transactionHistoryResponseList, incomeStatementResponse);
-        log.info("Generated HTML: {}", html);
+        log.info("HTML 생성 시간: {}", LocalDateTime.now().toString());
 
         // HTML을 PDF로 변환
         return convertHtmlToPdf(html);

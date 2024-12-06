@@ -13,8 +13,10 @@ public enum ErrorCode {
     EMAIL_ALREADY_EXISTS(432, "존재하는 이메일입니다."),
     INVALID_PASSWORD_FORMAT(433, "비밀번호 형식이 잘못되었습니다."),
 
-    SERVER_ERROR(500, "서버 에러입니다. 서버 팀에 연락주세요!");
+    SERVER_ERROR(500, "서버 에러입니다. 서버 팀에 연락주세요!"),
 
+    USER_FEIGN_ERROR(500, "USER 서버에서 에러가 발생했습니다."),
+    BANKING_FEIGN_ERROR(500, "금융 코어 서버에서 에러가 발생했습니다.");
 
     private final int status;
     private final String message;

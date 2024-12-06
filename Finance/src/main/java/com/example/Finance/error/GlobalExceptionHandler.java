@@ -11,24 +11,17 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(FeignException.class)
-    private ResponseEntity<ErrorDTO> handleFeignException(FeignException e) {
-        try {
-            return ResponseEntity
-                    .status(500)
-                    .body(ErrorDTO.builder()
-                            .code("FEIGN_ERROR")
-                            .message(e.getMessage())
-                            .build());
-        } catch (Exception ex) {
-            return ResponseEntity
-                    .status(500)
-                    .body(ErrorDTO.builder()
-                            .code("FEIGN_EXCEPTION_ERROR")
-                            .message("EXCEPTION_ERROR")
-                            .build());
-        }
-    }
+//    @ExceptionHandler(FeignException.class)
+//    private ResponseEntity<ErrorDTO> handleFeignException(FeignException e) {
+//
+//        return ResponseEntity
+//                    .status(500)
+//                    .body(ErrorDTO.builder()
+//                            .code("FEIGN_ERROR")
+//                            .message("금융 서버와의 통신 도중 문제가 발생했습니다")
+//                            .build());
+//
+//    }
 
     @ExceptionHandler({CustomException.class})
     protected ResponseEntity<ErrorDTO> handleCustomException(CustomException ex) {

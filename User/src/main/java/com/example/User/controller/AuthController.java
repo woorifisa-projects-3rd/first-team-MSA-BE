@@ -26,7 +26,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    ResponseEntity<ResNewAccessToken> login(@RequestBody ReqLoginData reqLoginData, HttpServletRequest request) {
+    public ResponseEntity<ResNewAccessToken> login(@RequestBody ReqLoginData reqLoginData, HttpServletRequest request) {
         log.info("reqLoginData: "+reqLoginData);
 
         Integer id= presidentService.validateLogin(reqLoginData);
@@ -55,27 +55,27 @@ public class AuthController {
     }
 
     @GetMapping("/logout")
-    ResponseEntity<Void> logout(@MasterId Integer id) {
+    public ResponseEntity<Void> logout(@MasterId Integer id) {
         redisTokenService.removeRefreshToken(id);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/refresh")
-    ResponseEntity<ResNewAccessToken> refresh(@MasterId Integer id) {
+    public ResponseEntity<ResNewAccessToken> refresh(@MasterId Integer id) {
         String accessToken =redisTokenService.checkRefreshToken(id);
 
         return ResponseEntity.ok(ResNewAccessToken.from(accessToken));
     }
 
     @PostMapping("/regist")
-    ResponseEntity<ResNewAccessToken> regist(@RequestBody ReqRegist reqRegist) {
+    public ResponseEntity<ResNewAccessToken> regist(@RequestBody ReqRegist reqRegist) {
         Integer id = presidentService.regist(reqRegist);
 //        String accessToken = authService.onAuthenticationSuccess(id);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/validate-password")
-    ResponseEntity<ResponseDto> validatePassword(
+    public ResponseEntity<ResponseDto> validatePassword(
             @MasterId Integer id,
             @Valid @RequestBody PassWordValidate passWordValidate)
     {

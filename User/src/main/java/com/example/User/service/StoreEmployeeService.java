@@ -35,12 +35,16 @@ public class StoreEmployeeService {
     @Transactional
     public void updateEmployee(int storeEmployeeId, @Valid StoreEmployeeUpdateRequest request)
     {
-        storeEmployeeRepository.updateStoreEmployee(
+        int rowsUpdated = storeEmployeeRepository.updateStoreEmployee(
                 storeEmployeeId, request.getName(), request.getSex(),
                 request.getAddress(), request.getBirthDate(), request.getPhoneNumber(),
                 request.getEmail(), request.getSalary(), request.getEmploymentType(),
                 request.getBankCode(), request.getAccountNumber(), request.getPaymentDate()
         );
+
+        if (rowsUpdated == 0) {
+            throw new CustomException(ErrorCode.STOREEMPLOYEE_NOT_FOUND);
+        };
     }
 
     @Transactional
@@ -59,7 +63,7 @@ public class StoreEmployeeService {
 
     public String getEmail(Integer seId){
         StoreEmployee storeEmployee= storeEmployeeRepository.findById(seId)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_EMPLOYEE));
+                .orElseThrow(() -> new CustomException(ErrorCode.STOREEMPLOYEE_NOT_FOUND));
         return storeEmployee.getEmail();
     }
 

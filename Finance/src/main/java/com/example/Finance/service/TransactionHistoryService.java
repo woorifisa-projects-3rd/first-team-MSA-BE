@@ -4,8 +4,12 @@ import com.example.Finance.dto.TransactionChartResponse;
 import com.example.Finance.dto.TransactionHistoryRequest;
 import com.example.Finance.dto.TransactionHistoryResponse;
 import com.example.Finance.dto.TransactionHistoryWithCounterPartyResponse;
+import com.example.Finance.error.CustomException;
+import com.example.Finance.error.ErrorCode;
 import com.example.Finance.feign.CoreBankFeign;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TransactionHistoryService {
     private final CoreBankFeign coreBankFeign;
 
@@ -65,24 +70,45 @@ public class TransactionHistoryService {
     public List<TransactionHistoryResponse> getYearMonthlyTransactions(
             TransactionHistoryRequest transactionHistoryRequest,
             Integer year,
-            Integer month)
-    {
-        return coreBankFeign.getTransactionHistoryList(transactionHistoryRequest, year, month);
+            Integer month) {
+        try {
+            return coreBankFeign.getTransactionHistoryList(transactionHistoryRequest, year, month);
+        } catch (FeignException e) {
+            log.error("코어뱅킹 서비스 통신 중 오류 발생 - year: {}, month: {}", year, month, e);
+            throw new CustomException(ErrorCode.BANKING_FEIGN_ERROR);
+        } catch (Exception e) {
+            log.error("통신 중 예상치 못한 오류 발생 - year: {}, month: {}", year, month, e);
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
     }
 
     public List<TransactionHistoryWithCounterPartyResponse> getYearMonthlyTransactionsWithCounterPartyName(
             TransactionHistoryRequest transactionHistoryRequest,
             Integer year,
-            Integer month)
-    {
-        return coreBankFeign.getTransactionHistoryYearSalesListWithCounterParty(transactionHistoryRequest, year, month);
+            Integer month) {
+        try {
+            return coreBankFeign.getTransactionHistoryYearSalesListWithCounterParty(transactionHistoryRequest, year, month);
+        } catch (FeignException e) {
+            log.error("코어뱅킹 서비스 통신 중 오류 발생 - year: {}, month: {}", year, month, e);
+            throw new CustomException(ErrorCode.BANKING_FEIGN_ERROR);
+        } catch (Exception e) {
+            log.error("통신 중 예상치 못한 오류 발생 - year: {}, month: {}", year, month, e);
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
     }
 
     public List<TransactionHistoryResponse> getYearlyTransactions(
             TransactionHistoryRequest transactionHistoryRequest,
-            Integer year
-    ) {
-        return coreBankFeign.getTransactionHistoryYearSalesList(transactionHistoryRequest, year);
+            Integer year) {
+        try {
+            return coreBankFeign.getTransactionHistoryYearSalesList(transactionHistoryRequest, year);
+        } catch (FeignException e) {
+            log.error("코어뱅킹 서비스 통신 중 오류 발생 - year: {}", year, e);
+            throw new CustomException(ErrorCode.BANKING_FEIGN_ERROR);
+        } catch (Exception e) {
+            log.error("통신 중 예상치 못한 오류 발생 - year: {}", year, e);
+            throw new CustomException(ErrorCode.SERVER_ERROR);
+        }
     }
 
     public Map<Integer, Long> calculateMonthlySalesDetail(
