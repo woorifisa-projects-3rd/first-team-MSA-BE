@@ -22,11 +22,11 @@ public class PdfService {
             ITextRenderer renderer = new ITextRenderer();
 
             // 폰트 설정
-            ClassPathResource regularFont = new ClassPathResource("fonts/NanumGothic-Regular.ttf");
+            String fontPath = "/app/fonts/NanumGothic-Regular.ttf";
 
             // 폰트 등록
             renderer.getFontResolver().addFont(
-                    regularFont.getFile().getAbsolutePath(),
+                    fontPath,
                     BaseFont.IDENTITY_H,
                     BaseFont.NOT_EMBEDDED
             );

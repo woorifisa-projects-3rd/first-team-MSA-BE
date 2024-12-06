@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Component
-@FeignClient(name = "CoreBank", url = "http://localhost:3030")
+@FeignClient(name = "CoreBank", url = "http://3.39.182.226:3030")
 public interface CoreBankFeign {
 
     @PostMapping("/bank/list")

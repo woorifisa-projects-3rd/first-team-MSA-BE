@@ -24,11 +24,7 @@ public class GCPConfig {
 
     @Bean
     public Storage storage() {
-//        String key = String.format("classpath:%s.json", keyFileName);
-//        try (InputStream keyFile = ResourceUtils.getURL(key).openStream();) {
-
-            try (ByteArrayInputStream keyFile = new ByteArrayInputStream(credentialsJson.getBytes(StandardCharsets.UTF_8))) {
-
+        try (ByteArrayInputStream keyFile = new ByteArrayInputStream(credentialsJson.getBytes(StandardCharsets.UTF_8))) {
 
             return StorageOptions.newBuilder()
                     .setCredentials(GoogleCredentials.fromStream(keyFile))

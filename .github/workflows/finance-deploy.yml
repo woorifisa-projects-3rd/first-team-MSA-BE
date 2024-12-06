@@ -1,0 +1,108 @@
+name: finance-deploy To EC2
+
+on:
+  pull_request:
+    types: [closed]
+    branches: ["deploy"]
+    paths:
+      - "Finance/**"
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  deploy-finance:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-22.04   #
+    steps:
+      - name: Github Repository 파일 불러오기
+        uses: actions/checkout@v4
+
+      - name: Finance 폴더만 체크아웃
+        run: git sparse-checkout init --cone && git sparse-checkout set Finance
+
+      - name: Cache JDK 17
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/sdkman/candidates
+          key: ${{ runner.os }}-jdk-17-${{ hashFiles('**/build.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-jdk-17-
+
+      - name: jdk 17버전 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: gradlew에 실행 권한 부여하기
+        working-directory: ./Finance
+        run: chmod +x ./gradlew
+
+      - name: 빌드 진행
+        working-directory: ./Finance
+        run: ./gradlew clean bootJar -x test
+
+      - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{secrets.AWS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_ACCESS_KEY}}
+
+      - name: ECR에 로그인하기
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build with cache
+        uses: docker/build-push-action@v5
+        with:
+          context: ./Finance
+          file: ./Finance/Dockerfile
+          push: true
+          tags: ${{secrets.DOCKER_USERNAME}}/msa/finance:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-2  # ECR Public은 us-east-1이지만, ECS는 ap-northeast-2에 있으므로 이 리전으로 변경
+          aws-access-key-id: ${{secrets.AWS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_ACCESS_KEY}}
+
+
+
+      - name: 현재 Task Definition 가져오기
+        run: |
+          aws ecs describe-task-definition --task-definition finance \
+          --query taskDefinition > task-definition.json
+
+      - name: Task Definition 출력 확인
+        run: |
+          echo "Generated task definition: ${{ steps.task-def.outputs.task-definition }}"
+          cat ${{ steps.task-def.outputs.task-definition }}
+
+      - name: 새 이미지로 Task Definition 업데이트
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: finance
+          image: ${{secrets.DOCKER_USERNAME}}/msa/finance:${{ github.sha }}
+
+      - name: ECS Task Definition 업데이트
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: financefargate    # ECS 서비스 이름
+          cluster: ClusterMSA    # ECS 클러스터 이름
+          wait-for-service-stability: false

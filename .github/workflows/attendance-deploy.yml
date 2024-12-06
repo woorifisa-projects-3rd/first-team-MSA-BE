@@ -1,0 +1,140 @@
+name: attendance-deploy To EC2
+
+on: # action 실행될 트리거
+  pull_request:
+    types: [closed]
+    branches: ["deploy"]
+    paths:
+      - "Attendance/**"
+
+permissions:  #권한 부여
+  contents: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  deploy-attendance:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-22.04   #스텝이 적용될 운영체제
+    steps:
+      - name: Github Repository 파일 불러오기  #스텝 설명
+        uses: actions/checkout@v4  # actions/checkout 는 현재 워크플로우에 체크아웃(복사) 가져옴 ,@v4 는 버전
+
+      - name: Attendance 폴더만 체크아웃
+        run: git sparse-checkout init --cone && git sparse-checkout set Attendance
+        # git sparse-checkout 는 부분체크아웃
+        # Attendance만 가져옴 --cone으로 한 개 디렉토리 가져올때 좋음
+
+      - name: Cache JDK 17
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/sdkman/candidates  #여기 경로는 고정 경로  SDKMAN은 sdk관리 디렉토리이고 아래 후보자들이 있는거
+          key: ${{ runner.os }}-jdk-17-${{ hashFiles('**/build.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-jdk-17-
+
+      - name: jdk 17버전 설치   #GitHub Actions 자체 설치 시키는 것이기 때문에 비용 관계 무
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin  # openjdk의 배포판
+          java-version: 17
+
+      - name: gradlew에 실행 권한 부여하기
+        working-directory: ./Attendance
+        run: chmod +x ./gradlew
+
+      - name: 빌드 진행
+        working-directory: ./Attendance
+        run: ./gradlew clean bootJar -x test
+
+      - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_ACCESS_KEY }}
+
+      - name: ECR에 로그인하기
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+
+      #      - name: Docker Hub에 로그인하기
+      #        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login --username ${{ secrets.DOCKER_USERNAME }} --password-stdin
+      #        # password 문자열 출력,  "|" 는 명령어 연결,  stdin(입력받음)으로  history 파일에 명령어가 기록 방지
+
+
+      - name: Set up Docker Buildx   # 향상된 빌드 기능인 Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build with cache
+        uses: docker/build-push-action@v5     #실제 빌드 및 푸시
+        with:
+          context: ./Attendance
+          file: ./Attendance/Dockerfile
+          push: true
+          tags: ${{secrets.DOCKER_USERNAME}}/msa/attendance:${{ github.sha }}   # latest 말고 ${{ github.sha }} 이것도 가능
+          cache-from: type=gha             # GitHub Actions의 저장된 캐시에서 읽어옴
+          cache-to: type=gha,mode=max      # GitHub Actions의 캐시 저장소에 저장
+      #        위와 동일 but 캐시 미사용
+      #      - name: Docker 이미지 생성
+      #        run: docker build -t attendance ./Attendance
+      #
+      #      - name: Docker에 태그 붙이기
+      #        run: docker tag attendance ${{secrets.DOCKER_USERNAME}}/attendance:latest
+      #
+      #      - name: Docker Hub에 push
+      #        run: docker push ${{secrets.DOCKER_USERNAME}}/attendance:latest
+
+      - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ap-northeast-2  # ECR Public은 us-east-1이지만, ECS는 ap-northeast-2에 있으므로 이 리전으로 변경
+          aws-access-key-id: ${{secrets.AWS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_ACCESS_KEY}}
+
+
+      - name: 현재 Task Definition 가져오기
+        run: |
+          aws ecs describe-task-definition --task-definition attendance \
+          --query taskDefinition > task-definition.json
+
+      - name: Task Definition 출력 확인
+        run: |
+          echo "Generated task definition: ${{ steps.task-def.outputs.task-definition }}"
+          cat ${{ steps.task-def.outputs.task-definition }}
+
+      - name: 새 이미지로 Task Definition 업데이트
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: attendance
+          image: ${{secrets.DOCKER_USERNAME}}/msa/attendance:${{ github.sha }}
+
+      - name: ECS Task Definition 업데이트
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: attendance-service    # ECS 서비스 이름
+          cluster: ClusterMSA    # ECS 클러스터 이름
+          wait-for-service-stability: false
+
+#      - name: ssh로 ec2 접속
+#        uses: appleboy/ssh-action@v1.0.3
+#        with:
+#          host: ${{secrets.EC2_HOST}}              # EC2 퍼블릭 IP
+#          username: ${{secrets.EC2_USERNAME}}          # EC2 사용자명 (예: ubuntu
+#          key: ${{secrets.EC2_SSH_KEY}}               # EC2 SSH 프라이빗 키
+#          script_stop: true
+#          script: |
+#            docker system prune -f
+#            docker image prune -a -f
+#            docker volume prune -f
+#
+#            docker stop attendance || true
+#            docker rm attendance || true
+#            docker pull ${{secrets.DOCKER_USERNAME}}/attendance:latest
+#            docker run -d --name attendance -p 6060:6060 ${{secrets.DOCKER_USERNAME}}/attendance:latest

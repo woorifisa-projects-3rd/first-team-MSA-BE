@@ -41,7 +41,6 @@ public class FinanceController {
     {
         TransactionHistoryRequest transactionHistoryRequest=
                 TransactionHistoryRequest.from(userInteractService.getStoreAccountInfo(storeid));
-
         return ResponseEntity.ok(
                 transactionHistoryService.getTransactionChartData(transactionHistoryRequest, year ,month));
     }
@@ -90,7 +89,6 @@ public class FinanceController {
         headers.setContentType(MediaType.APPLICATION_PDF);
         return new ResponseEntity<>(pdfContent, headers, HttpStatus.OK);
     }
-
 
 
 

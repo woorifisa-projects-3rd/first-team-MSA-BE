@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Component
-@FeignClient(name = "CoreBank", url = "http://localhost:3030")
+@FeignClient(name = "CoreBank", url = "http://3.39.182.226:3030")
 public interface CoreBankFeign {
 
     @PostMapping("/businesscheck")

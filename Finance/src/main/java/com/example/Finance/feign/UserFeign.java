@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Component
-@FeignClient(name = "User", url = "http://localhost:7070")
+@FeignClient(name = "User", url = "http://user.msanew:7070")
 public interface UserFeign {
 
     @GetMapping("/storeAccount")

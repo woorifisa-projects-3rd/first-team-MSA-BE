@@ -1,0 +1,99 @@
+name: core-bank-deploy To EC2
+
+on:
+  pull_request:
+    types: [closed]
+    branches: ["deploy"]
+    paths:
+      - "core-bank/**"
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  deploy-core-bank:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Github Repository 파일 불러오기
+        uses: actions/checkout@v4
+
+      - name: core-bank 폴더만 체크아웃
+        run: |
+          git sparse-checkout init --cone
+          git sparse-checkout set core-bank
+
+
+      - name: Cache JDK 17
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/sdkman/candidates
+          key: ${{ runner.os }}-jdk-17-${{ hashFiles('**/build.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-jdk-17-
+
+      - name: jdk 17버전 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: gradlew에 실행 권한 부여하기
+        working-directory: ./core-bank  # 실행 위치를 core-bank 폴더로 지정
+        run: chmod +x ./gradlew
+
+      - name: 빌드 진행
+        working-directory: ./core-bank
+        run: ./gradlew clean bootJar -x test
+
+      - name: AWS Resource에 접근할 수 있게 AWS credentials 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1                #public은 us-east-1고정
+          aws-access-key-id: ${{secrets.AWS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_ACCESS_KEY}}
+
+      - name: ECR에 로그인하기
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build with cache
+        uses: docker/build-push-action@v5
+        with:
+          context: ./core-bank
+          file: ./core-bank/Dockerfile
+          push: true
+          tags: ${{secrets.DOCKER_USERNAME}}/banking:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: ssh로 ec2 접속
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{secrets.BANKING_HOST}}             # 퍼블릭 ip
+          username: ${{secrets.EC2_USERNAME}}     # ec2-user
+          key: ${{secrets.EC2_SSH_KEY}}           # .pem 파일
+          script_stop: true
+          script: |
+
+            docker system prune -f
+            docker image prune -a -f
+            docker volume prune -f
+            docker stop banking || true
+            docker rm banking || true
+            docker pull ${{secrets.DOCKER_USERNAME}}/banking:${{ github.sha }} 
+            
+            docker run -d --name banking -p 3030:3030 \
+            -e DB_URL=${{secrets.BANK_DB_URL}} \
+            -e DB_USERNAME=${{secrets.BANK_DB_USERNAME}} \
+            -e DB_PASSWORD=${{secrets.BANK_DB_PASSWORD}} \
+            -e EMAIL_PASSWORD=${{secrets.EMAIL_PASSWORD}} \
+            -e EMAIL_USERNAME=${{secrets.EMAIL_USERNAME}} \
+            ${{secrets.DOCKER_USERNAME}}/banking:${{ github.sha }}

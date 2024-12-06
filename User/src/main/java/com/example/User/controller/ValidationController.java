@@ -24,4 +24,5 @@ public class ValidationController {
         return ResponseEntity.badRequest().body(ResponseDto.from(validationResult));
     }
 
+
 }

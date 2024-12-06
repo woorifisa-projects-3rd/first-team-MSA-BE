@@ -1,0 +1,8 @@
+.git
+.gitignore
+.gradle
+.idea
+build
+!build/libs/*.jar
+*.md
+src/test/

@@ -28,12 +28,9 @@ ext {
 }
 
 dependencies {
-	implementation 'org.springframework.cloud:spring-cloud-config-client'
 	implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.cloud:spring-cloud-starter-config'
-	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -43,6 +40,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'com.google.code.gson:gson:2.8.9'
 	implementation 'org.springframework.boot:spring-boot-starter-batch'
+	implementation 'org.springframework.cloud:spring-cloud-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	implementation 'org.xhtmlrenderer:flying-saucer-core:9.1.22'
@@ -62,4 +60,13 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+bootJar {
+	enabled = true
+	archiveClassifier.set('')
+}
+
+jar {
+	enabled = false
 }

@@ -11,15 +11,11 @@ import java.util.Properties;
 @Configuration
 public class MailConfig {
 
-
-    @Value("${EMAIL_PASSWORD}")
+    @Value("${spring.mail.password}")
     private String EMAIL_PASSWORD;
 
-    @Value("${EMAIL_USERNAME}")
+    @Value("${spring.mail.username}")
     private String EMAIL_USERNAME;
-
-    @Value("${MAP_API_KEY}")
-    private String API_KEY;
 
 
     @Bean

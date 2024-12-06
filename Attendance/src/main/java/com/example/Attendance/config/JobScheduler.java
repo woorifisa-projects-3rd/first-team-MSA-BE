@@ -24,8 +24,9 @@ public class JobScheduler {
     private final JobLauncher jobLauncher;
     private final Job attendanceJob;
 
-    @Scheduled(cron = "0 * * * * *")  // 매일 새벽 4시 실행
-//@Scheduled(cron = "0 0 4 * * *")
+//    @Scheduled(cron = "0 * * * * *")  // 매일 새벽 4시 실행
+@Scheduled(cron = "0 0 4 * * *")
+//    @Scheduled(cron = "0 */5 * * * *")
     public void runJob() {
         String dateParam = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 

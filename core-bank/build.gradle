@@ -38,3 +38,12 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+bootJar {
+	enabled = true
+	archiveClassifier.set('')
+}
+
+jar {
+	enabled = false
+}
